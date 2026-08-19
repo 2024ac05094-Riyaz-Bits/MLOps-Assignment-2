@@ -1,0 +1,21 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python scripts/preprocess.py --raw-dir data/raw --processed-dir 
+      data/processed --seed 42
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: dcfb2cdc7d15db863d280b055f7818bf.dir
+      size: 848866411
+      nfiles: 24999
+    - path: scripts/preprocess.py
+      hash: md5
+      md5: 5d73736a19e1e03477e1e78b5bb7c52f
+      size: 2240
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 80a839b8cc6d926b6a04d1402d1145d4.dir
+      size: 1316976407
+      nfiles: 64998

@@ -1,0 +1,9 @@
+stages:
+  preprocess:
+    cmd: python scripts/preprocess.py --raw-dir data/raw --processed-dir 
+      data/processed --seed 42
+    deps:
+    - data/raw
+    - scripts/preprocess.py
+    outs:
+    - data/processed
