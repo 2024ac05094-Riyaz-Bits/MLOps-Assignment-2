@@ -269,9 +269,20 @@ The trained model is approximately 51.7 MB and is therefore not stored directly 
 
 ---
 
+## Step 6 — Model Saving
+
+The trained Baseline CNN model is saved as a PyTorch `state_dict` after training.
+
+The model is saved to:
+
+```text
+artifacts/
+└── baseline_cnn.pt
+```
+---
+
 ## Future MLOps Steps
 
-6. Model saving
 7. MLflow tracking
 8. FastAPI inference
 9. `requirements.txt`
