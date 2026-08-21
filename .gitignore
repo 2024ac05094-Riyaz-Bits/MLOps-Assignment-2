@@ -9,6 +9,7 @@ env/
 
 artifacts/*
 !artifacts/.gitkeep
+!artifacts/*.dvc
 mlruns/*
 !mlruns/.gitkeep
 data/raw/*
