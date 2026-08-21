@@ -1,2 +1,4 @@
-# Step 1 scaffold only.
-# Pinned project dependencies will be added in a later step.
+torch
+torchvision
+Pillow
+numpy
