@@ -1,4 +1,4 @@
-"""Train the baseline CNN model."""
+"""Train the baseline CNN model with MLflow tracking."""
 
 from __future__ import annotations
 
@@ -12,6 +12,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+import mlflow
+import mlflow.pytorch
 import numpy as np
 import torch
 from torch import nn, optim
@@ -126,7 +128,7 @@ def train_model(
     seed: int,
     output_dir: Path,
 ) -> dict:
-    """Train the baseline CNN and return training metrics."""
+    """Train the baseline CNN and track the experiment with MLflow."""
 
     set_seed(seed)
 
@@ -150,70 +152,117 @@ def train_model(
     print(f"Device: {device}")
     print(f"Training images: {len(train_loader.dataset)}")
     print(f"Validation images: {len(val_loader.dataset)}")
+    
+    mlflow.set_tracking_uri(
+    f"sqlite:///{(PROJECT_ROOT / 'mlflow.db').as_posix()}"
+    )
+    mlflow.set_experiment("cats-vs-dogs-baseline")
 
-    for epoch in range(1, epochs + 1):
-        train_loss, train_accuracy = run_epoch(
-            model=model,
-            loader=train_loader,
-            criterion=criterion,
-            device=device,
-            optimizer=optimizer,
+    with mlflow.start_run(run_name="BaselineCNN"):
+
+        mlflow.log_params(
+            {
+                "model": "BaselineCNN",
+                "epochs": epochs,
+                "batch_size": batch_size,
+                "learning_rate": learning_rate,
+                "seed": seed,
+                "device": str(device),
+                "input_size": "224x224",
+                "loss_function": "BCEWithLogitsLoss",
+                "optimizer": "Adam",
+            }
         )
 
-        val_loss, val_accuracy = run_epoch(
-            model=model,
-            loader=val_loader,
-            criterion=criterion,
-            device=device,
+        for epoch in range(1, epochs + 1):
+            train_loss, train_accuracy = run_epoch(
+                model=model,
+                loader=train_loader,
+                criterion=criterion,
+                device=device,
+                optimizer=optimizer,
+            )
+
+            val_loss, val_accuracy = run_epoch(
+                model=model,
+                loader=val_loader,
+                criterion=criterion,
+                device=device,
+            )
+
+            epoch_result = {
+                "epoch": epoch,
+                "train_loss": train_loss,
+                "train_accuracy": train_accuracy,
+                "val_loss": val_loss,
+                "val_accuracy": val_accuracy,
+            }
+
+            history.append(epoch_result)
+
+            mlflow.log_metrics(
+                {
+                    "train_loss": train_loss,
+                    "train_accuracy": train_accuracy,
+                    "val_loss": val_loss,
+                    "val_accuracy": val_accuracy,
+                },
+                step=epoch,
+            )
+
+            print(
+                f"Epoch {epoch}/{epochs} | "
+                f"train_loss={train_loss:.4f} | "
+                f"train_accuracy={train_accuracy:.4f} | "
+                f"val_loss={val_loss:.4f} | "
+                f"val_accuracy={val_accuracy:.4f}"
+            )
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        model_path = output_dir / "baseline_cnn.pt"
+
+        torch.save(
+            model.state_dict(),
+            model_path,
         )
 
-        epoch_result = {
-            "epoch": epoch,
-            "train_loss": train_loss,
-            "train_accuracy": train_accuracy,
-            "val_loss": val_loss,
-            "val_accuracy": val_accuracy,
+        metrics = {
+            "model": "BaselineCNN",
+            "device": str(device),
+            "epochs": epochs,
+            "batch_size": batch_size,
+            "learning_rate": learning_rate,
+            "seed": seed,
+            "history": history,
         }
 
-        history.append(epoch_result)
+        metrics_path = output_dir / "training_metrics.json"
 
-        print(
-            f"Epoch {epoch}/{epochs} | "
-            f"train_loss={train_loss:.4f} | "
-            f"train_accuracy={train_accuracy:.4f} | "
-            f"val_loss={val_loss:.4f} | "
-            f"val_accuracy={val_accuracy:.4f}"
+        with metrics_path.open(
+            "w",
+            encoding="utf-8",
+        ) as file:
+            json.dump(metrics, file, indent=2)
+
+        mlflow.log_artifact(
+            str(metrics_path),
+            artifact_path="training",
         )
 
-    output_dir.mkdir(parents=True, exist_ok=True)
+        mlflow.log_artifact(
+            str(model_path),
+            artifact_path="model",
+        )
 
-    torch.save(
-        model.state_dict(),
-        output_dir / "baseline_cnn.pt",
-    )
-
-    metrics = {
-        "model": "BaselineCNN",
-        "device": str(device),
-        "epochs": epochs,
-        "batch_size": batch_size,
-        "learning_rate": learning_rate,
-        "seed": seed,
-        "history": history,
-    }
-
-    with (output_dir / "training_metrics.json").open(
-        "w",
-        encoding="utf-8",
-    ) as file:
-        json.dump(metrics, file, indent=2)
+        print(f"MLflow run ID: {mlflow.active_run().info.run_id}")
 
     return metrics
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train the baseline CNN."
+        description="Train the baseline CNN with MLflow tracking."
     )
 
     parser.add_argument(

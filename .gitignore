@@ -10,8 +10,14 @@ env/
 artifacts/*
 !artifacts/.gitkeep
 !artifacts/*.dvc
+
 mlruns/*
 !mlruns/.gitkeep
+
+mlflow.db
+mlflow.db-shm
+mlflow.db-wal
+
 data/raw/*
 !data/raw/.gitkeep
 data/processed/*

@@ -9,6 +9,8 @@ This project implements an end-to-end MLOps pipeline for **Cats vs Dogs binary i
 - Step 3: DVC setup and data versioning ✓
 - Step 4: Git versioning ✓
 - Step 5: Baseline CNN model ✓
+- Step 6: Model saving ✓
+- Step 7: MLflow tracking ✓
 
 ---
 
@@ -71,7 +73,7 @@ data/processed/
 
 **DVC version:** 3.67.1
 
-DVC is used to track the large dataset and preprocessing outputs, while Git is used for source-code versioning.
+DVC is used to track the large dataset and preprocessing outputs, while Git is used for source-code and project configuration versioning.
 
 ### DVC Setup
 
@@ -200,7 +202,7 @@ The model uses `BCEWithLogitsLoss` for binary classification and the Adam optimi
 | Parameter      | Value           |
 |-----------------|-----------------|
 | Model           | BaselineCNN     |
-| Epochs          | 1               |
+| Epochs          | 2               |
 | Batch size      | 32              |
 | Learning rate   | 0.001           |
 | Random seed     | 42              |
@@ -216,19 +218,19 @@ The model was trained using:
 
 ### Training Results
 
-| Metric              | Result   |
-|----------------------|----------|
-| Training loss        | 0.6082   |
-| Training accuracy    | 66.54%   |
-| Validation loss      | 0.5460   |
-| Validation accuracy  | 72.22%   |
+| Metric              | Epoch 1  | Epoch 2  |
+|----------------------|----------|----------|
+| Training loss        | 0.6082   | 0.5015   |
+| Training accuracy    | 66.54%   | 75.88%   |
+| Validation loss      | 0.5460   | 0.4743   |
+| Validation accuracy  | 72.22%   | 78.38%   |
 
-The baseline model was successfully trained for one epoch.
+The baseline model was successfully trained for two epochs.
 
 ### Training Command
 
 ```bash
-python scripts/train.py --epochs 1 --batch-size 32
+python scripts/train.py --epochs 2 --batch-size 32
 ```
 
 ### Model Artifacts
@@ -279,24 +281,121 @@ The model is saved to:
 artifacts/
 └── baseline_cnn.pt
 ```
+
+The saved model was verified by loading the `state_dict` into a new `BaselineCNN` instance.
+
+### Model Verification
+
+A dedicated verification script is provided:
+
+```bash
+python scripts/verify_model.py
+```
+
+Example output:
+
+```text
+Model loaded successfully
+Model path: ...\artifacts\baseline_cnn.pt
+Parameters: 12938561
+```
+
+### Step 6 Verification
+
+- Model saved as PyTorch state_dict ✓
+- Model artifact available ✓
+- Model loaded successfully ✓
+- Model parameters verified ✓
+
+---
+
+## Step 7 — MLflow Experiment Tracking
+
+MLflow is used to track the CNN training experiment, including training configuration, metrics, and the training run.
+
+### MLflow Configuration
+
+**MLflow version:** 3.15.1
+
+A local SQLite database is used as the MLflow tracking backend:
+
+```text
+mlflow.db
+```
+
+The MLflow database is excluded from Git using `.gitignore`.
+
+The MLflow experiment name is:
+
+```text
+cats-vs-dogs-baseline
+```
+
+### Training Configuration
+
+| Parameter      | Value           |
+|-----------------|-----------------|
+| Model           | BaselineCNN     |
+| Epochs          | 2               |
+| Batch size      | 32              |
+| Learning rate   | 0.001           |
+| Random seed     | 42              |
+| Device          | CPU             |
+| Input size      | 224x224 RGB     |
+
+### MLflow Run
+
+The baseline CNN training run was successfully recorded in MLflow.
+
+- **Experiment:** `cats-vs-dogs-baseline`
+- **Run ID:** `5fc917c75d064400bc1e7a05c9574e26`
+
+### Training Metrics
+
+The following training and validation metrics were recorded:
+
+| Metric              | Epoch 1  | Epoch 2  |
+|----------------------|----------|----------|
+| Training loss        | 0.6082   | 0.5015   |
+| Training accuracy    | 66.54%   | 75.88%   |
+| Validation loss      | 0.5460   | 0.4743   |
+| Validation accuracy  | 72.22%   | 78.38%   |
+
+The validation accuracy improved from 72.22% to 78.38% after the second epoch.
+
+### MLflow Verification
+
+MLflow tracking was verified successfully:
+
+- MLflow installed ✓
+- MLflow tracking imports verified ✓
+- SQLite tracking backend configured ✓
+- MLflow database initialized ✓
+- Experiment created ✓
+- Training run recorded ✓
+- Run ID generated ✓
+- Training metrics recorded ✓
+
+**Result:** Baseline CNN training was successfully tracked using MLflow. ✓
+
 ---
 
 ## Future MLOps Steps
 
-7. MLflow tracking
-8. FastAPI inference
-9. `requirements.txt`
-10. Docker
-11. Pytest
-12. GitHub Actions CI
-13. GHCR
-14. Docker Compose
-15. CD automation
-16. Smoke testing
-17. Request/response logging
-18. Request counters
-19. Latency tracking
-20. Model performance monitoring
-21. Final documentation
-22. Final ZIP
-23. Screen recording
+- FastAPI inference
+- `requirements.txt`
+- Docker
+- Pytest
+- GitHub Actions CI
+- GHCR
+- Docker Compose
+- CD automation
+- Smoke testing
+- Request/response logging
+- Request counters
+- Latency tracking
+- Model performance monitoring
+- Final documentation
+- Final ZIP
+- Screen recording
+
