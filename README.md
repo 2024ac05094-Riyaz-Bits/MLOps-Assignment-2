@@ -465,20 +465,93 @@ Example Dog prediction:
 
 ---
 
+## Step 9 — Requirements
+
+The project dependencies required for model training, MLflow tracking, and FastAPI inference are listed in `requirements.txt`.
+
+The main dependencies include:
+
+- PyTorch
+- Torchvision
+- Pillow
+- NumPy
+- MLflow
+- FastAPI
+- Uvicorn
+- python-multipart
+
+### Step 9 Verification
+
+- Required dependencies listed ✓
+- PyTorch import verified ✓
+- MLflow import verified ✓
+- FastAPI import verified ✓
+- Uvicorn import verified ✓
+- Requirements file verified ✓
+
+---
+
+## Step 10 — Docker
+
+Docker configuration was created to containerize the FastAPI inference service.
+
+### Dockerfile
+
+The `Dockerfile`:
+
+- Uses Python 3.11 slim as the base image
+- Installs dependencies from `requirements.txt`
+- Copies the FastAPI application
+- Copies the CNN model artifact
+- Exposes port `8000`
+- Starts the FastAPI application using Uvicorn
+
+### Docker Ignore
+
+The `.dockerignore` file excludes:
+
+- Python virtual environments
+- Python cache files
+- Git files
+- DVC cache
+- Raw and processed datasets
+- MLflow local tracking files
+- DVC metadata files
+
+The trained model `artifacts/baseline_cnn.pt` is included in the Docker build because it is required for inference.
+
+### Docker Configuration Verification
+
+The Docker configuration was verified locally by checking:
+
+- `Dockerfile` ✓
+- `.dockerignore` ✓
+- Model artifact exists ✓
+- Model artifact size: approximately 51.7 MB ✓
+
+The Docker image build and container runtime were not executed locally because Docker installation is restricted on the development office laptop.
+
+### Step 10 Verification
+
+- Dockerfile created ✓
+- `.dockerignore` created ✓
+- FastAPI container command configured ✓
+- Model artifact available ✓
+- Docker build configuration verified ✓
+- Local Docker build — Not executed due to environment restriction
+
 ## Future MLOps Steps
 
-- `requirements.txt`
-- Docker
-- Pytest
-- GitHub Actions CI
-- GHCR
-- Docker Compose
-- CD automation
-- Smoke testing
-- Request/response logging
-- Request counters
-- Latency tracking
-- Model performance monitoring
-- Final documentation
-- Final ZIP
-- Screen recording
+11. Pytest
+12. GitHub Actions CI
+13. GHCR
+14. Docker Compose
+15. CD automation
+16. Smoke testing
+17. Request/response logging
+18. Request counters
+19. Latency tracking
+20. Model performance monitoring
+21. Final documentation
+22. Final ZIP
+23. Screen recording
