@@ -380,9 +380,93 @@ MLflow tracking was verified successfully:
 
 ---
 
+## Step 8 — FastAPI Inference
+
+A FastAPI-based inference service was implemented to expose the trained Baseline CNN model through a REST API.
+
+The API loads the trained model from:
+
+```text
+artifacts/
+└── baseline_cnn.pt
+```
+
+The uploaded image is:
+
+- Converted to RGB
+- Resized to 224x224
+- Converted to a PyTorch tensor
+- Normalized using the same mean and standard deviation used during training
+
+### API Endpoints
+
+| Method | Endpoint   | Description                              |
+|--------|------------|-------------------------------------------|
+| GET    | `/`        | Returns basic API information             |
+| GET    | `/health`  | Checks API and model health                |
+| POST   | `/predict` | Predicts whether an image is a Cat or Dog  |
+
+### Run the API
+
+```bash
+uvicorn api.main:app --reload
+```
+
+The API is available at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive API documentation is available at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### Prediction Response
+
+The `/predict` endpoint accepts an image file and returns the predicted class, confidence, and Dog probability.
+
+Example Cat prediction:
+
+```json
+{
+  "filename": "cat_00007.jpg",
+  "prediction": "Cat",
+  "confidence": 0.5425,
+  "dog_probability": 0.4575
+}
+```
+
+Example Dog prediction:
+
+```json
+{
+  "filename": "dog_00001.jpg",
+  "prediction": "Dog",
+  "confidence": 0.5264,
+  "dog_probability": 0.5264
+}
+```
+
+### Step 8 Verification
+
+- FastAPI installed ✓
+- Uvicorn installed ✓
+- API server started successfully ✓
+- `/` endpoint verified ✓
+- `/health` endpoint verified ✓
+- `/predict` endpoint verified ✓
+- OpenAPI documentation verified ✓
+- Cat image prediction verified ✓
+- Dog image prediction verified ✓
+- Baseline CNN model loaded successfully ✓
+
+---
+
 ## Future MLOps Steps
 
-- FastAPI inference
 - `requirements.txt`
 - Docker
 - Pytest
@@ -398,4 +482,3 @@ MLflow tracking was verified successfully:
 - Final documentation
 - Final ZIP
 - Screen recording
-

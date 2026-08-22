@@ -3,3 +3,6 @@ torchvision
 Pillow
 numpy
 mlflow
+fastapi
+uvicorn
+python-multipart
