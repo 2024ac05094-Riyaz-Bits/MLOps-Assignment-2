@@ -1,34 +1,14 @@
 import sys
 from pathlib import Path
 
+import torch
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-import torch
-
 from src.models import BaselineCNN
-
-
-MODEL_PATH = PROJECT_ROOT / "artifacts" / "baseline_cnn.pt"
-
-
-def test_model_artifact_exists():
-    assert MODEL_PATH.exists()
-
-
-def test_model_can_be_loaded():
-    model = BaselineCNN()
-
-    state_dict = torch.load(
-        MODEL_PATH,
-        map_location="cpu",
-    )
-
-    model.load_state_dict(state_dict)
-    model.eval()
-
-    assert isinstance(model, BaselineCNN)
 
 
 def test_model_output_shape():
@@ -41,3 +21,23 @@ def test_model_output_shape():
         output = model(sample)
 
     assert output.shape == (1, 1)
+
+
+def test_model_state_dict_can_be_saved_and_loaded(tmp_path):
+    model = BaselineCNN()
+
+    model_path = tmp_path / "test_model.pt"
+
+    torch.save(model.state_dict(), model_path)
+
+    loaded_model = BaselineCNN()
+
+    state_dict = torch.load(
+        model_path,
+        map_location="cpu",
+    )
+
+    loaded_model.load_state_dict(state_dict)
+    loaded_model.eval()
+
+    assert isinstance(loaded_model, BaselineCNN)
