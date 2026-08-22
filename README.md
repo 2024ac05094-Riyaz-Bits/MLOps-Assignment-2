@@ -540,9 +540,48 @@ The Docker image build and container runtime were not executed locally because D
 - Docker build configuration verified ✓
 - Local Docker build — Not executed due to environment restriction
 
+## Step 11 — Pytest
+
+Pytest was added to validate the preprocessing pipeline and model inference components.
+
+### Tests Implemented
+
+The test suite verifies:
+
+- Processed train, validation, and test directories exist
+- Processed images are RGB
+- Processed images are 224x224
+- Baseline CNN model artifact exists
+- Saved model state dictionary can be loaded successfully
+- Model produces the expected binary classification output shape
+
+### Test Execution
+
+Run the test suite using:
+
+\`\`\`bash
+pytest
+\`\`\`
+
+**Test Results**
+
+\`\`\`
+5 passed in 25.11s
+\`\`\`
+
+### Step 11 Verification
+
+- [x] Pytest test suite implemented
+- [x] Preprocessing tests passed
+- [x] Model artifact tests passed
+- [x] Model loading test passed
+- [x] Model output shape test passed
+- [x] All tests passed successfully
+
+---
+
 ## Future MLOps Steps
 
-11. Pytest
 12. GitHub Actions CI
 13. GHCR
 14. Docker Compose
