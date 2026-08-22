@@ -559,7 +559,7 @@ The test suite verifies:
 
 Run the test suite using:
 
-\`\`\`bash
+\`\`\`
 pytest
 \`\`\`
 
