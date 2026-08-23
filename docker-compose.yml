@@ -1,0 +1,7 @@
+services:
+  api:
+    image: ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
+    container_name: cats-dogs-api
+    ports:
+      - "8000:8000"
+    restart: unless-stopped

@@ -1,0 +1,58 @@
+name: CD - Deploy and Smoke Test
+
+on:
+  workflow_run:
+    workflows:
+      - Build and Push Docker Image
+    types:
+      - completed
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy-and-test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull application image
+        run: docker pull ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
+
+      - name: Start application with Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for API
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/health; then
+              echo "API is healthy"
+              exit 0
+            fi
+            echo "Waiting for API..."
+            sleep 2
+          done
+          echo "API failed to become healthy"
+          docker compose logs
+          exit 1
+
+      - name: Smoke test root endpoint
+        run: curl -fsS http://127.0.0.1:8000/
+
+      - name: Show container status
+        run: docker compose ps
+
+      - name: Stop application
+        if: always()
+        run: docker compose down
