@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import io
 import sys
+from collections import Counter
 from pathlib import Path
+from threading import Lock
 
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -21,12 +23,42 @@ from src.models import BaselineCNN
 
 MODEL_PATH = PROJECT_ROOT / "artifacts" / "baseline_cnn.pt"
 
+
 app = FastAPI(
     title="Cats vs Dogs Classifier",
     description="FastAPI inference service for the Baseline CNN model.",
     version="1.0.0",
 )
 
+
+# ---------------------------------------------------------
+# Request counters
+# ---------------------------------------------------------
+
+request_counter = Counter()
+counter_lock = Lock()
+
+
+@app.middleware("http")
+async def count_requests(request, call_next):
+    """Count API requests by HTTP method and endpoint."""
+
+    if request.url.path != "/metrics":
+        endpoint = request.url.path
+        method = request.method
+
+        with counter_lock:
+            request_counter["total"] += 1
+            request_counter[f"{method} {endpoint}"] += 1
+
+    response = await call_next(request)
+
+    return response
+
+
+# ---------------------------------------------------------
+# Image preprocessing
+# ---------------------------------------------------------
 
 # Same preprocessing used during model training.
 transform = transforms.Compose(
@@ -40,6 +72,10 @@ transform = transforms.Compose(
     ]
 )
 
+
+# ---------------------------------------------------------
+# Model loading
+# ---------------------------------------------------------
 
 model = BaselineCNN()
 
@@ -55,9 +91,14 @@ model.load_state_dict(
 model.eval()
 
 
+# ---------------------------------------------------------
+# API endpoints
+# ---------------------------------------------------------
+
 @app.get("/")
 def root() -> dict[str, str]:
     """Return basic API information."""
+
     return {
         "message": "Cats vs Dogs classifier API is running",
         "model": "BaselineCNN",
@@ -67,9 +108,23 @@ def root() -> dict[str, str]:
 @app.get("/health")
 def health() -> dict[str, str]:
     """Check whether the API and model are ready."""
+
     return {
         "status": "healthy",
         "model": "BaselineCNN",
+    }
+
+
+@app.get("/metrics")
+def metrics() -> dict:
+    """Return API request counters."""
+
+    with counter_lock:
+        counters = dict(request_counter)
+
+    return {
+        "total_requests": counters.pop("total", 0),
+        "requests_by_endpoint": counters,
     }
 
 
@@ -86,6 +141,7 @@ async def predict(file: UploadFile = File(...)) -> dict:
     try:
         contents = await file.read()
         image = Image.open(io.BytesIO(contents)).convert("RGB")
+
     except Exception as exc:
         raise HTTPException(
             status_code=400,
