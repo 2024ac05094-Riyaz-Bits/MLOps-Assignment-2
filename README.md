@@ -580,17 +580,207 @@ pytest
 
 ---
 
+## Step 12 — GitHub Actions CI
+
+GitHub Actions CI was implemented to automatically validate the project whenever changes are pushed to the `main` branch.
+
+### CI Pipeline
+
+The CI workflow performs:
+
+- Python environment setup
+- Dependency installation
+- Pytest execution
+- Automated validation of the project
+
+### Step 12 Verification
+
+- [x] GitHub Actions CI workflow implemented
+- [x] Dependencies installed automatically
+- [x] Pytest executed through GitHub Actions
+- [x] CI workflow completed successfully
+
+---
+
+## Step 13 — GitHub Container Registry (GHCR)
+
+GitHub Container Registry (GHCR) was integrated to build and publish the Docker image automatically.
+
+### GHCR Pipeline
+
+The GitHub Actions workflow:
+
+- Builds the Docker image
+- Logs in to GitHub Container Registry
+- Pushes the image to GHCR
+- Creates a `latest` image tag
+- Creates a commit-specific image tag using the Git SHA
+
+### Docker Image
+
+```text
+ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
+```
+
+### Step 13 Verification
+
+- [x] GHCR integration implemented
+- [x] Docker image built successfully
+- [x] Docker image pushed to GHCR
+- [x] `latest` image tag created
+- [x] Commit-specific image tag created
+
+---
+
+## Step 14 — Docker Compose
+
+Docker Compose was added to simplify running the inference API using the published container image.
+
+### Docker Compose Configuration
+
+The application uses the GHCR image:
+
+```text
+ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
+```
+
+The API is exposed on:
+
+```text
+http://localhost:8000
+```
+
+### Step 14 Verification
+
+- [x] Docker Compose configuration added
+- [x] GHCR image configured
+- [x] API port 8000 configured
+- [x] Container restart policy configured
+
+---
+
+## Step 15 — CD Automation
+
+Continuous Deployment (CD) was implemented using GitHub Actions.
+
+The CD workflow is triggered after the Docker image build workflow completes successfully.
+
+### CD Pipeline
+
+The deployment workflow:
+
+1. Checks out the repository
+2. Logs in to GHCR
+3. Pulls the latest Docker image
+4. Starts the application using Docker Compose
+5. Waits for the API to become healthy
+6. Performs smoke testing
+7. Displays container status
+8. Stops the application after testing
+
+### Step 15 Verification
+
+- [x] CD workflow implemented
+- [x] GHCR authentication configured
+- [x] Docker image pulled successfully
+- [x] Docker Compose deployment configured
+- [x] Automated deployment workflow completed successfully
+
+---
+
+## Step 16 — Smoke Testing
+
+Automated smoke tests were added to verify that the deployed API is running correctly.
+
+### Smoke Tests
+
+The CD workflow verifies:
+
+- `/health` endpoint
+- `/` root endpoint
+- Successful API startup
+- Docker container status
+
+The health endpoint is checked using:
+
+```text
+GET /health
+```
+
+The root endpoint is checked using:
+
+```text
+GET /
+```
+
+### Step 16 Verification
+
+- [x] API health check implemented
+- [x] Root endpoint smoke test implemented
+- [x] Docker container startup verified
+- [x] CD smoke test completed successfully
+
+---
+
+## Step 17 — Request/Response Logging
+
+Request and response logging was added to the FastAPI inference service to provide visibility into API activity.
+
+The logging functionality helps track API requests and responses during inference.
+
+### Step 17 Verification
+
+- [x] API request logging implemented
+- [x] Response logging implemented
+- [x] Logging integrated with the FastAPI application
+- [x] Logging changes validated through CI/CD
+
+---
+
+## Step 18 — Request Counters
+
+Request counters were added to monitor API usage.
+
+The counters provide information about the number of requests handled by the inference API.
+
+### Monitoring
+
+The API tracks request activity, including inference requests, to provide basic operational monitoring.
+
+### Step 18 Verification
+
+- [x] Request counters implemented
+- [x] API request activity tracked
+- [x] Changes validated through GitHub Actions
+- [x] Docker image rebuilt successfully
+- [x] CD deployment and smoke tests passed
+
+---
+
+## Current MLOps Status
+
+The project currently includes:
+
+- [x] Data preprocessing with DVC
+- [x] Baseline CNN model training
+- [x] MLflow experiment tracking
+- [x] FastAPI inference API
+- [x] Docker configuration
+- [x] Pytest test suite
+- [x] GitHub Actions CI
+- [x] GitHub Container Registry (GHCR)
+- [x] Docker Compose
+- [x] Continuous Deployment (CD)
+- [x] Automated smoke testing
+- [x] Request/response logging
+- [x] API request counters
+
+---
+
 ## Future MLOps Steps
 
-12. GitHub Actions CI
-13. GHCR
-14. Docker Compose
-15. CD automation
-16. Smoke testing
-17. Request/response logging
-18. Request counters
-19. Latency tracking
-20. Model performance monitoring
-21. Final documentation
-22. Final ZIP
-23. Screen recording
+  19. Latency tracking
+  20. Model performance monitoring
+  21. Final documentation
+  22. Final ZIP
+  23. Screen recording

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 from threading import Lock
@@ -32,28 +33,94 @@ app = FastAPI(
 
 
 # ---------------------------------------------------------
-# Request counters
+# Request counters and latency tracking
 # ---------------------------------------------------------
 
 request_counter = Counter()
+
+latency_stats = {
+    "count": 0,
+    "total_ms": 0.0,
+    "min_ms": None,
+    "max_ms": None,
+}
+
+endpoint_latency = {}
+
 counter_lock = Lock()
 
 
 @app.middleware("http")
-async def count_requests(request, call_next):
-    """Count API requests by HTTP method and endpoint."""
+async def monitor_requests(request, call_next):
+    """Track request counts and API response latency."""
 
-    if request.url.path != "/metrics":
+    start_time = time.perf_counter()
+
+    response = None
+
+    try:
+        response = await call_next(request)
+        return response
+
+    finally:
+        elapsed_ms = (time.perf_counter() - start_time) * 1000
+
         endpoint = request.url.path
         method = request.method
 
-        with counter_lock:
-            request_counter["total"] += 1
-            request_counter[f"{method} {endpoint}"] += 1
+        # Do not count the monitoring endpoint itself.
+        if endpoint != "/metrics":
+            with counter_lock:
+                # Request counters
+                request_counter["total"] += 1
+                request_counter[f"{method} {endpoint}"] += 1
 
-    response = await call_next(request)
+                # Overall latency statistics
+                latency_stats["count"] += 1
+                latency_stats["total_ms"] += elapsed_ms
 
-    return response
+                if (
+                    latency_stats["min_ms"] is None
+                    or elapsed_ms < latency_stats["min_ms"]
+                ):
+                    latency_stats["min_ms"] = elapsed_ms
+
+                if (
+                    latency_stats["max_ms"] is None
+                    or elapsed_ms > latency_stats["max_ms"]
+                ):
+                    latency_stats["max_ms"] = elapsed_ms
+
+                # Per-endpoint latency statistics
+                endpoint_key = f"{method} {endpoint}"
+
+                if endpoint_key not in endpoint_latency:
+                    endpoint_latency[endpoint_key] = {
+                        "count": 0,
+                        "total_ms": 0.0,
+                        "min_ms": None,
+                        "max_ms": None,
+                    }
+
+                endpoint_stats = endpoint_latency[endpoint_key]
+
+                endpoint_stats["count"] += 1
+                endpoint_stats["total_ms"] += elapsed_ms
+
+                if (
+                    endpoint_stats["min_ms"] is None
+                    or elapsed_ms < endpoint_stats["min_ms"]
+                ):
+                    endpoint_stats["min_ms"] = elapsed_ms
+
+                if (
+                    endpoint_stats["max_ms"] is None
+                    or elapsed_ms > endpoint_stats["max_ms"]
+                ):
+                    endpoint_stats["max_ms"] = elapsed_ms
+
+        if response is not None:
+            response.headers["X-Process-Time-ms"] = f"{elapsed_ms:.2f}"
 
 
 # ---------------------------------------------------------
@@ -117,14 +184,60 @@ def health() -> dict[str, str]:
 
 @app.get("/metrics")
 def metrics() -> dict:
-    """Return API request counters."""
+    """Return API request counters and latency statistics."""
 
     with counter_lock:
         counters = dict(request_counter)
+        overall_latency = dict(latency_stats)
+        endpoint_latency_stats = {
+            endpoint: dict(stats)
+            for endpoint, stats in endpoint_latency.items()
+        }
+
+    request_count = overall_latency["count"]
+
+    if request_count > 0:
+        average_ms = (
+            overall_latency["total_ms"] / request_count
+        )
+    else:
+        average_ms = 0.0
+
+    endpoint_metrics = {}
+
+    for endpoint, stats in endpoint_latency_stats.items():
+        if stats["count"] > 0:
+            endpoint_average_ms = (
+                stats["total_ms"] / stats["count"]
+            )
+        else:
+            endpoint_average_ms = 0.0
+
+        endpoint_metrics[endpoint] = {
+            "count": stats["count"],
+            "average_ms": round(endpoint_average_ms, 2),
+            "min_ms": round(stats["min_ms"], 2)
+            if stats["min_ms"] is not None
+            else 0.0,
+            "max_ms": round(stats["max_ms"], 2)
+            if stats["max_ms"] is not None
+            else 0.0,
+        }
 
     return {
         "total_requests": counters.pop("total", 0),
         "requests_by_endpoint": counters,
+        "latency": {
+            "count": request_count,
+            "average_ms": round(average_ms, 2),
+            "min_ms": round(overall_latency["min_ms"], 2)
+            if overall_latency["min_ms"] is not None
+            else 0.0,
+            "max_ms": round(overall_latency["max_ms"], 2)
+            if overall_latency["max_ms"] is not None
+            else 0.0,
+            "by_endpoint": endpoint_metrics,
+        },
     }
 
 
