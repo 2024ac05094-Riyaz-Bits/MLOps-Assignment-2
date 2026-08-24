@@ -1,0 +1,24 @@
+{
+  "model": "BaselineCNN",
+  "device": "cpu",
+  "epochs": 2,
+  "batch_size": 32,
+  "learning_rate": 0.001,
+  "seed": 42,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6082156183827172,
+      "train_accuracy": 0.6654165416541654,
+      "val_loss": 0.5459909433598896,
+      "val_accuracy": 0.722177742193755
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.5015244087716056,
+      "train_accuracy": 0.7587758775877588,
+      "val_loss": 0.4743392429082655,
+      "val_accuracy": 0.7838270616493195
+    }
+  ]
+}
