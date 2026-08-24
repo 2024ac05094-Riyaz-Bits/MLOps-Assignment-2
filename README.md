@@ -777,9 +777,79 @@ The project currently includes:
 
 ---
 
+## Step 19 — Latency Tracking
+
+API latency tracking was implemented in the FastAPI inference service.
+
+### Latency Monitoring
+
+The API tracks:
+
+- Total number of requests
+- Average request latency
+- Minimum request latency
+- Maximum request latency
+- Per-endpoint latency statistics
+
+Each API response also includes the processing time through the
+`X-Process-Time-ms` response header.
+
+### Metrics Endpoint
+
+Latency information can be accessed through:
+
+```text
+GET /metrics
+```
+
+Example:
+
+```json
+{
+  "total_requests": 2,
+  "requests_by_endpoint": {
+    "GET /": 1,
+    "GET /health": 1
+  },
+  "latency": {
+    "count": 2,
+    "average_ms": 2.27,
+    "min_ms": 1.95,
+    "max_ms": 2.58,
+    "by_endpoint": {
+      "GET /": {
+        "count": 1,
+        "average_ms": 2.58,
+        "min_ms": 2.58,
+        "max_ms": 2.58
+      },
+      "GET /health": {
+        "count": 1,
+        "average_ms": 1.95,
+        "min_ms": 1.95,
+        "max_ms": 1.95
+      }
+    }
+  }
+}
+```
+
+### Step 19 Verification
+
+- [x] Request processing time tracked
+- [x] Average latency calculated
+- [x] Minimum latency calculated
+- [x] Maximum latency calculated
+- [x] Per-endpoint latency tracked
+- [x] `/metrics` endpoint implemented
+- [x] `X-Process-Time-ms` response header implemented
+- [x] API tested locally
+- [x] Pytest passed successfully
+
+---
+
 ## Future MLOps Steps
 
-  19. Latency tracking
   20. Model performance monitoring
   21. Final documentation
   22. Final ZIP
