@@ -274,7 +274,7 @@ def main() -> None:
     parser.add_argument(
         "--epochs",
         type=int,
-        default=1,
+        default=10,
     )
 
     parser.add_argument(

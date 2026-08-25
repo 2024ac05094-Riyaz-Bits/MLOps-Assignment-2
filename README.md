@@ -2,17 +2,58 @@
 
 This project implements an end-to-end MLOps pipeline for **Cats vs Dogs binary image classification** for a pet adoption platform.
 
-## Current Status
+## Step 1 — Create the Project Structure
 
-- Step 1: Project scaffold ✓
-- Step 2: Dataset preprocessing ✓
-- Step 3: DVC setup and data versioning ✓
-- Step 4: Git versioning ✓
-- Step 5: Baseline CNN model ✓
-- Step 6: Model saving ✓
-- Step 7: MLflow tracking ✓
+A clean repository structure was created for the MLOps Assignment 2 project.
+
+The project separates the major components of the machine learning and MLOps pipeline, including data processing, model training, inference, testing, monitoring, scripts, artifacts, and deployment configuration.
+
+### Project Structure
+
+```text
+MLOps-Assignment-2/
+│
+├── data/
+│   ├── raw/
+│   └── processed/
+│
+├── src/
+│   ├── data/
+│   ├── models/
+│   ├── training/
+│   ├── inference/
+│   └── monitoring/
+│
+├── api/
+│   └── main.py
+│
+├── tests/
+│   ├── test_preprocessing.py
+│   └── test_inference.py
+│
+├── scripts/
+│   ├── preprocess.py
+│   ├── train.py
+│   └── smoke_test.py
+│
+├── artifacts/
+│
+├── mlruns/
+│
+├── .github/
+│   └── workflows/
+│
+├── Dockerfile
+├── requirements.txt
+├── dvc.yaml
+├── dvc.lock
+├── .gitignore
+└── README.md
+
+```
 
 ---
+
 
 ## Step 2 — Dataset Preprocessing
 
@@ -24,14 +65,14 @@ data/raw/
 └── Dog/
 ```
 
-The preprocessing pipeline:
+**The preprocessing pipeline:**
 
-- Converts images to RGB
-- Resizes images to 224x224
-- Creates deterministic 80/10/10 train/validation/test splits
-- Uses random seed 42
-- Generates one augmented copy of each training image
-- Creates dataset manifests and split summary
+1. Converts images to RGB
+2. Resizes images to 224x224
+3. Creates deterministic 80/10/10 train/validation/test splits
+4. Uses random seed 42
+5. Generates one augmented copy of each training image
+6. Creates dataset manifests and split summary
 
 ### Dataset Statistics
 
@@ -43,13 +84,13 @@ The preprocessing pipeline:
 | Test              | 2,502  | 1,251  | 1,251  |
 | Augmented Train   | 39,996 | —      | —      |
 
-### Run preprocessing
+### Run Preprocessing
 
 ```bash
 python scripts/preprocess.py --raw-dir data/raw --processed-dir data/processed --seed 42
 ```
 
-### Generated structure
+### Generated Structure
 
 ```text
 data/processed/
@@ -60,7 +101,7 @@ data/processed/
 └── test/
 ```
 
-### Manifests
+### Generated Manifests
 
 - `train_manifest.csv`
 - `val_manifest.csv`
@@ -102,29 +143,16 @@ stages:
       - data/processed
 ```
 
-Run and verify the pipeline:
+The pipeline can be executed and checked using:
 
 ```bash
 dvc repro
 dvc status
 ```
 
-`dvc.lock` is generated after running the pipeline.
+After running the pipeline, `dvc.lock` is generated to record the pipeline state and data dependencies.
 
-**Result:** Data and pipeline are up to date. ✓
-
-### Step 3 Verification
-
-- DVC installation ✓
-- DVC initialization ✓
-- Raw dataset tracking ✓
-- Preprocessing pipeline ✓
-- `dvc.yaml` ✓
-- `dvc.lock` ✓
-- Pipeline execution ✓
-- DVC status verification ✓
-
-Processed images were verified as 224x224 RGB images.
+The DVC pipeline was successfully executed, and the data and pipeline were reported as up to date. Processed images were also verified as 224x224 RGB images.
 
 ---
 
@@ -162,13 +190,15 @@ git push -u origin main
 
 ### Git Verification
 
+The repository status, configured remote, and active branch can be checked using:
+
 ```bash
 git status
 git remote -v
 git branch
 ```
 
-**Result:** Git repository initialized, connected to GitHub, and project files pushed successfully. ✓
+The Git repository was successfully initialized, connected to GitHub, and the project files were pushed to the `main` branch.
 
 ---
 
@@ -199,15 +229,15 @@ The model uses `BCEWithLogitsLoss` for binary classification and the Adam optimi
 
 ### Training Configuration
 
-| Parameter      | Value           |
-|-----------------|-----------------|
-| Model           | BaselineCNN     |
-| Epochs          | 2               |
-| Batch size      | 32              |
-| Learning rate   | 0.001           |
-| Random seed     | 42              |
-| Device          | CPU             |
-| Input size      | 224x224 RGB     |
+| Parameter     | Value          |
+|---------------|----------------|
+| Model         | BaselineCNN    |
+| Epochs        | 10             |
+| Batch size    | 32             |
+| Learning rate | 0.001          |
+| Random seed   | 42             |
+| Device        | CPU            |
+| Input size    | 224x224 RGB    |
 
 ### Training Dataset
 
@@ -218,19 +248,25 @@ The model was trained using:
 
 ### Training Results
 
-| Metric              | Epoch 1  | Epoch 2  |
-|----------------------|----------|----------|
-| Training loss        | 0.6082   | 0.5015   |
-| Training accuracy    | 66.54%   | 75.88%   |
-| Validation loss      | 0.5460   | 0.4743   |
-| Validation accuracy  | 72.22%   | 78.38%   |
+| Epoch | Train Loss | Train Accuracy | Validation Loss | Validation Accuracy |
+|------:|-----------:|----------------:|-----------------:|----------------------:|
+| 1     | 0.6082     | 66.54%          | 0.5460           | 72.22%                |
+| 2     | 0.5015     | 75.88%          | 0.4743           | 78.38%                |
+| 3     | 0.4216     | 80.92%          | 0.4235           | 79.94%                |
+| 4     | 0.3501     | 84.84%          | 0.4300           | 81.18%                |
+| 5     | 0.2704     | 88.51%          | 0.4585           | 79.18%                |
+| 6     | 0.2032     | 91.85%          | 0.4736           | 81.75%                |
+| 7     | 0.1468     | 94.41%          | 0.5911           | 82.07%                |
+| 8     | 0.1082     | 95.86%          | 0.5756           | **82.43%**            |
+| 9     | 0.0861     | 96.79%          | 0.7284           | 82.19%                |
+| 10    | 0.0670     | 97.57%          | 0.8804           | 82.19%                |
 
-The baseline model was successfully trained for two epochs.
+The model was trained for 10 epochs. Training accuracy increased throughout the training process, while validation accuracy reached approximately **82.43% at epoch 8**.
 
 ### Training Command
 
 ```bash
-python scripts/train.py --epochs 2 --batch-size 32
+python scripts/train.py --epochs 10 --batch-size 32
 ```
 
 ### Model Artifacts
@@ -253,21 +289,7 @@ artifacts/
 └── training_metrics.json.dvc
 ```
 
-The trained model is approximately 51.7 MB and is therefore not stored directly in Git.
-
-### Step 5 Verification
-
-- CNN model implementation ✓
-- PyTorch dependencies installed ✓
-- Training pipeline executed ✓
-- Training dataset loaded ✓
-- Validation dataset loaded ✓
-- Model training completed ✓
-- Model artifact generated ✓
-- Training metrics generated ✓
-- Model artifact tracked with DVC ✓
-- Training metrics tracked with DVC ✓
-- DVC status verified ✓
+The trained model is approximately 51.7 MB and is tracked separately because of its size.
 
 ---
 
@@ -282,7 +304,7 @@ artifacts/
 └── baseline_cnn.pt
 ```
 
-The saved model was verified by loading the `state_dict` into a new `BaselineCNN` instance.
+The saved model can be loaded into a new `BaselineCNN` instance for inference.
 
 ### Model Verification
 
@@ -300,12 +322,17 @@ Model path: ...\artifacts\baseline_cnn.pt
 Parameters: 12938561
 ```
 
-### Step 6 Verification
+The model artifact is approximately 51.7 MB and is tracked separately from the source code.
 
-- Model saved as PyTorch state_dict ✓
-- Model artifact available ✓
-- Model loaded successfully ✓
-- Model parameters verified ✓
+### Model Artifact
+
+```text
+artifacts/
+├── baseline_cnn.pt
+└── baseline_cnn.pt.dvc
+```
+
+The `.dvc` file is used to track the model artifact with DVC.
 
 ---
 
@@ -333,50 +360,55 @@ cats-vs-dogs-baseline
 
 ### Training Configuration
 
-| Parameter      | Value           |
-|-----------------|-----------------|
-| Model           | BaselineCNN     |
-| Epochs          | 2               |
-| Batch size      | 32              |
-| Learning rate   | 0.001           |
-| Random seed     | 42              |
-| Device          | CPU             |
-| Input size      | 224x224 RGB     |
+| Parameter     | Value          |
+|---------------|----------------|
+| Model         | BaselineCNN    |
+| Epochs        | 10             |
+| Batch size    | 32             |
+| Learning rate | 0.001          |
+| Random seed   | 42             |
+| Device        | CPU            |
+| Input size    | 224x224 RGB    |
 
 ### MLflow Run
 
-The baseline CNN training run was successfully recorded in MLflow.
+The Baseline CNN training run was recorded in MLflow.
 
 - **Experiment:** `cats-vs-dogs-baseline`
-- **Run ID:** `5fc917c75d064400bc1e7a05c9574e26`
+- **Run ID:** `612883f2e7a641779384e508b6f5e751`
+
+The run records the training parameters and epoch-level training and validation metrics.
 
 ### Training Metrics
 
-The following training and validation metrics were recorded:
+| Epoch | Training Loss | Training Accuracy | Validation Loss | Validation Accuracy |
+|------:|---------------:|--------------------:|------------------:|-----------------------:|
+| 1     | 0.6082         | 66.54%              | 0.5460            | 72.22%                 |
+| 2     | 0.5015         | 75.88%              | 0.4743            | 78.38%                 |
+| 3     | 0.4216         | 80.92%              | 0.4235            | 79.94%                 |
+| 4     | 0.3501         | 84.84%              | 0.4300            | 81.18%                 |
+| 5     | 0.2704         | 88.51%              | 0.4585            | 79.18%                 |
+| 6     | 0.2032         | 91.85%              | 0.4736            | 81.75%                 |
+| 7     | 0.1468         | 94.41%              | 0.5911            | 82.07%                 |
+| 8     | 0.1082         | 95.86%              | 0.5756            | 82.43%                 |
+| 9     | 0.0861         | 96.79%              | 0.7284            | 82.19%                 |
+| 10    | 0.0670         | 97.57%              | 0.8804            | 82.19%                 |
 
-| Metric              | Epoch 1  | Epoch 2  |
-|----------------------|----------|----------|
-| Training loss        | 0.6082   | 0.5015   |
-| Training accuracy    | 66.54%   | 75.88%   |
-| Validation loss      | 0.5460   | 0.4743   |
-| Validation accuracy  | 72.22%   | 78.38%   |
+The model's training accuracy increased throughout the 10 epochs, reaching 97.57% at epoch 10. The highest validation accuracy was 82.43% at epoch 8.
 
-The validation accuracy improved from 72.22% to 78.38% after the second epoch.
+### MLflow Artifacts
 
-### MLflow Verification
+The training run also logs the following artifacts:
 
-MLflow tracking was verified successfully:
+```text
+training/
+└── training_metrics.json
 
-- MLflow installed ✓
-- MLflow tracking imports verified ✓
-- SQLite tracking backend configured ✓
-- MLflow database initialized ✓
-- Experiment created ✓
-- Training run recorded ✓
-- Run ID generated ✓
-- Training metrics recorded ✓
+model/
+└── baseline_cnn.pt
+```
 
-**Result:** Baseline CNN training was successfully tracked using MLflow. ✓
+MLflow therefore provides a record of the training parameters, epoch-level metrics, and generated model artifacts.
 
 ---
 
@@ -401,10 +433,10 @@ The uploaded image is:
 ### API Endpoints
 
 | Method | Endpoint   | Description                              |
-|--------|------------|-------------------------------------------|
-| GET    | `/`        | Returns basic API information             |
-| GET    | `/health`  | Checks API and model health                |
-| POST   | `/predict` | Predicts whether an image is a Cat or Dog  |
+|--------|-----------|-------------------------------------------|
+| GET    | `/`        | Returns basic API information            |
+| GET    | `/health`  | Checks API and model health              |
+| POST   | `/predict` | Predicts whether an image is a Cat or Dog |
 
 ### Run the API
 
@@ -424,11 +456,11 @@ Interactive API documentation is available at:
 http://127.0.0.1:8000/docs
 ```
 
-### Prediction Response
-
 The `/predict` endpoint accepts an image file and returns the predicted class, confidence, and Dog probability.
 
-Example Cat prediction:
+### Prediction Response
+
+Example response:
 
 ```json
 {
@@ -439,7 +471,7 @@ Example Cat prediction:
 }
 ```
 
-Example Dog prediction:
+Another example:
 
 ```json
 {
@@ -450,24 +482,13 @@ Example Dog prediction:
 }
 ```
 
-### Step 8 Verification
-
-- FastAPI installed ✓
-- Uvicorn installed ✓
-- API server started successfully ✓
-- `/` endpoint verified ✓
-- `/health` endpoint verified ✓
-- `/predict` endpoint verified ✓
-- OpenAPI documentation verified ✓
-- Cat image prediction verified ✓
-- Dog image prediction verified ✓
-- Baseline CNN model loaded successfully ✓
+The FastAPI service was tested locally using the API endpoints and the interactive Swagger documentation.
 
 ---
 
 ## Step 9 — Requirements
 
-The project dependencies required for model training, MLflow tracking, and FastAPI inference are listed in `requirements.txt`.
+The project dependencies required for data preprocessing, model training, MLflow tracking, testing, and FastAPI inference are listed in `requirements.txt`.
 
 The main dependencies include:
 
@@ -479,15 +500,15 @@ The main dependencies include:
 - FastAPI
 - Uvicorn
 - python-multipart
+- Pytest
 
-### Step 9 Verification
+The `requirements.txt` file is used to install the required Python packages for the project.
 
-- Required dependencies listed ✓
-- PyTorch import verified ✓
-- MLflow import verified ✓
-- FastAPI import verified ✓
-- Uvicorn import verified ✓
-- Requirements file verified ✓
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
@@ -501,14 +522,14 @@ The `Dockerfile`:
 
 - Uses Python 3.11 slim as the base image
 - Installs dependencies from `requirements.txt`
-- Copies the FastAPI application
-- Copies the CNN model artifact
+- Copies the FastAPI application and required project files
+- Copies the trained CNN model artifact
 - Exposes port `8000`
 - Starts the FastAPI application using Uvicorn
 
 ### Docker Ignore
 
-The `.dockerignore` file excludes:
+The `.dockerignore` file excludes unnecessary files and directories from the Docker build context, including:
 
 - Python virtual environments
 - Python cache files
@@ -516,29 +537,30 @@ The `.dockerignore` file excludes:
 - DVC cache
 - Raw and processed datasets
 - MLflow local tracking files
-- DVC metadata files
+- Unnecessary DVC metadata files
 
-The trained model `artifacts/baseline_cnn.pt` is included in the Docker build because it is required for inference.
+The trained model `artifacts/baseline_cnn.pt` is included in the Docker image because it is required for inference.
 
-### Docker Configuration Verification
+### Docker Deployment
 
-The Docker configuration was verified locally by checking:
+Docker is used to package the FastAPI inference service into a container.
 
-- `Dockerfile` ✓
-- `.dockerignore` ✓
-- Model artifact exists ✓
-- Model artifact size: approximately 51.7 MB ✓
+Docker image building and container execution were not performed locally because Docker installation is restricted on the development office laptop.
 
-The Docker image build and container runtime were not executed locally because Docker installation is restricted on the development office laptop.
+The containerized FastAPI application is deployed on **Render** as a web service.
 
-### Step 10 Verification
+The deployed service exposes the FastAPI application and provides the inference API through the hosted URL.
 
-- Dockerfile created ✓
-- `.dockerignore` created ✓
-- FastAPI container command configured ✓
-- Model artifact available ✓
-- Docker build configuration verified ✓
-- Local Docker build — Not executed due to environment restriction
+### Docker Configuration
+
+The main Docker-related files are:
+
+```text
+Dockerfile
+.dockerignore
+```
+
+---
 
 ## Step 11 — Pytest
 
@@ -559,52 +581,52 @@ The test suite verifies:
 
 Run the test suite using:
 
-\`\`\`
+```bash
 pytest
-\`\`\`
+```
 
-**Test Results**
+### Test Results
 
-\`\`\`
-5 passed in 25.11s
-\`\`\`
+```text
+4 passed in 13.99s
+```
 
-### Step 11 Verification
-
-- [x] Pytest test suite implemented
-- [x] Preprocessing tests passed
-- [x] Model artifact tests passed
-- [x] Model loading test passed
-- [x] Model output shape test passed
-- [x] All tests passed successfully
+The tests cover both preprocessing and inference functionality, and all tests passed successfully.
 
 ---
 
 ## Step 12 — GitHub Actions CI
 
-GitHub Actions CI was implemented to automatically validate the project whenever changes are pushed to the `main` branch.
+GitHub Actions CI was implemented to automatically validate the project when changes are pushed to the `main` branch.
 
 ### CI Pipeline
 
 The CI workflow performs:
 
 - Python environment setup
-- Dependency installation
+- Dependency installation from `requirements.txt`
 - Pytest execution
-- Automated validation of the project
+- Automated project validation
 
-### Step 12 Verification
+The workflow is defined in:
 
-- [x] GitHub Actions CI workflow implemented
-- [x] Dependencies installed automatically
-- [x] Pytest executed through GitHub Actions
-- [x] CI workflow completed successfully
+```text
+.github/
+└── workflows/
+    └── ci-cd.yml
+```
+
+### CI Workflow
+
+The GitHub Actions workflow runs the test suite automatically on the GitHub repository.
+
+A successful CI run confirms that the project dependencies can be installed and the automated tests pass in the GitHub Actions environment.
 
 ---
 
 ## Step 13 — GitHub Container Registry (GHCR)
 
-GitHub Container Registry (GHCR) was integrated to build and publish the Docker image automatically.
+GitHub Container Registry (GHCR) was integrated to build and publish the Docker image automatically through GitHub Actions.
 
 ### GHCR Pipeline
 
@@ -612,50 +634,66 @@ The GitHub Actions workflow:
 
 - Builds the Docker image
 - Logs in to GitHub Container Registry
-- Pushes the image to GHCR
+- Pushes the Docker image to GHCR
 - Creates a `latest` image tag
 - Creates a commit-specific image tag using the Git SHA
 
+The workflow is configured in:
+
+```text
+.github/
+└── workflows/
+    └── ghcr.yml
+```
+
 ### Docker Image
+
+The Docker image is published to:
 
 ```text
 ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
 ```
 
-### Step 13 Verification
+A commit-specific image is also created using the GitHub commit SHA:
 
-- [x] GHCR integration implemented
-- [x] Docker image built successfully
-- [x] Docker image pushed to GHCR
-- [x] `latest` image tag created
-- [x] Commit-specific image tag created
+```text
+ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:<commit-sha>
+```
+
+The GHCR workflow runs automatically when changes are pushed to the `main` branch.
 
 ---
 
 ## Step 14 — Docker Compose
 
-Docker Compose was added to simplify running the inference API using the published container image.
+Docker Compose was added to simplify running the FastAPI inference service using the published Docker image from GitHub Container Registry (GHCR).
 
 ### Docker Compose Configuration
 
-The application uses the GHCR image:
+The Compose configuration uses the published GHCR image:
 
 ```text
 ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
 ```
 
-The API is exposed on:
+The FastAPI service is exposed on port `8000`:
 
 ```text
 http://localhost:8000
 ```
 
-### Step 14 Verification
+The Compose configuration also includes a restart policy so that the container can restart automatically if it stops unexpectedly.
 
-- [x] Docker Compose configuration added
-- [x] GHCR image configured
-- [x] API port 8000 configured
-- [x] Container restart policy configured
+### Docker Compose File
+
+The configuration is defined in:
+
+```text
+deployment/
+└── docker-compose.yml
+```
+
+Docker Compose provides a simple way to run the containerized FastAPI inference service with the required port and restart configuration.
 
 ---
 
@@ -663,28 +701,41 @@ http://localhost:8000
 
 Continuous Deployment (CD) was implemented using GitHub Actions.
 
-The CD workflow is triggered after the Docker image build workflow completes successfully.
+The deployment process uses the Docker image published to GitHub Container Registry (GHCR) and deploys the containerized FastAPI application using Render.
 
 ### CD Pipeline
 
 The deployment workflow:
 
 1. Checks out the repository
-2. Logs in to GHCR
-3. Pulls the latest Docker image
-4. Starts the application using Docker Compose
-5. Waits for the API to become healthy
-6. Performs smoke testing
-7. Displays container status
-8. Stops the application after testing
+2. Logs in to GitHub Container Registry (GHCR)
+3. Builds and publishes the Docker image
+4. Uses the published Docker image for deployment
+5. Deploys the containerized FastAPI application on Render
+6. Starts the application on port `8000`
+7. Performs API health and smoke testing
+8. Verifies that the deployed application is running successfully
 
-### Step 15 Verification
+### Docker Image
 
-- [x] CD workflow implemented
-- [x] GHCR authentication configured
-- [x] Docker image pulled successfully
-- [x] Docker Compose deployment configured
-- [x] Automated deployment workflow completed successfully
+The published Docker image is:
+
+```text
+ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
+```
+
+The Docker image contains:
+
+- FastAPI inference application
+- Baseline CNN model
+- Python dependencies
+- Uvicorn server
+
+### Render Deployment
+
+The Dockerized FastAPI application is deployed on Render.
+
+Render provides the public hosting environment for the containerized application, allowing the FastAPI inference API to be accessed through a public URL.
 
 ---
 
@@ -713,13 +764,6 @@ The root endpoint is checked using:
 GET /
 ```
 
-### Step 16 Verification
-
-- [x] API health check implemented
-- [x] Root endpoint smoke test implemented
-- [x] Docker container startup verified
-- [x] CD smoke test completed successfully
-
 ---
 
 ## Step 17 — Request/Response Logging
@@ -727,13 +771,6 @@ GET /
 Request and response logging was added to the FastAPI inference service to provide visibility into API activity.
 
 The logging functionality helps track API requests and responses during inference.
-
-### Step 17 Verification
-
-- [x] API request logging implemented
-- [x] Response logging implemented
-- [x] Logging integrated with the FastAPI application
-- [x] Logging changes validated through CI/CD
 
 ---
 
@@ -746,34 +783,6 @@ The counters provide information about the number of requests handled by the inf
 ### Monitoring
 
 The API tracks request activity, including inference requests, to provide basic operational monitoring.
-
-### Step 18 Verification
-
-- [x] Request counters implemented
-- [x] API request activity tracked
-- [x] Changes validated through GitHub Actions
-- [x] Docker image rebuilt successfully
-- [x] CD deployment and smoke tests passed
-
----
-
-## Current MLOps Status
-
-The project currently includes:
-
-- [x] Data preprocessing with DVC
-- [x] Baseline CNN model training
-- [x] MLflow experiment tracking
-- [x] FastAPI inference API
-- [x] Docker configuration
-- [x] Pytest test suite
-- [x] GitHub Actions CI
-- [x] GitHub Container Registry (GHCR)
-- [x] Docker Compose
-- [x] Continuous Deployment (CD)
-- [x] Automated smoke testing
-- [x] Request/response logging
-- [x] API request counters
 
 ---
 
@@ -791,8 +800,7 @@ The API tracks:
 - Maximum request latency
 - Per-endpoint latency statistics
 
-Each API response also includes the processing time through the
-`X-Process-Time-ms` response header.
+Each API response also includes the processing time through the `X-Process-Time-ms` response header.
 
 ### Metrics Endpoint
 
@@ -806,51 +814,95 @@ Example:
 
 ```json
 {
-  "total_requests": 2,
+  "total_requests": 1,
   "requests_by_endpoint": {
-    "GET /": 1,
-    "GET /health": 1
+    "GET /": 1
   },
   "latency": {
-    "count": 2,
-    "average_ms": 2.27,
-    "min_ms": 1.95,
-    "max_ms": 2.58,
+    "count": 1,
+    "average_ms": 1.58,
+    "min_ms": 1.58,
+    "max_ms": 1.58,
     "by_endpoint": {
       "GET /": {
         "count": 1,
-        "average_ms": 2.58,
-        "min_ms": 2.58,
-        "max_ms": 2.58
-      },
-      "GET /health": {
-        "count": 1,
-        "average_ms": 1.95,
-        "min_ms": 1.95,
-        "max_ms": 1.95
+        "average_ms": 1.58,
+        "min_ms": 1.58,
+        "max_ms": 1.58
       }
     }
   }
 }
 ```
 
-### Step 19 Verification
+The `/metrics` endpoint provides basic API usage and latency information for monitoring the inference service.
 
-- [x] Request processing time tracked
-- [x] Average latency calculated
-- [x] Minimum latency calculated
-- [x] Maximum latency calculated
-- [x] Per-endpoint latency tracked
-- [x] `/metrics` endpoint implemented
-- [x] `X-Process-Time-ms` response header implemented
-- [x] API tested locally
-- [x] Pytest passed successfully
+---
+
+## Step 20 — Model Performance Monitoring
+
+Model performance evaluation was implemented to monitor the classification performance of the trained Baseline CNN model on the test dataset.
+
+### Performance Metrics
+
+The evaluation script calculates the following classification metrics:
+
+- Accuracy
+- Precision
+- Recall
+- F1-score
+- Number of test samples
+
+The evaluation results are stored in:
+
+```text
+artifacts/model_performance.json
+```
+
+### Model Performance Results
+
+The Baseline CNN model was evaluated on 2,502 test samples.
+
+```json
+{
+  "test_samples": 2502,
+  "accuracy": 0.8241,
+  "precision": 0.8348,
+  "recall": 0.8082,
+  "f1_score": 0.8213
+}
+```
+
+### Performance Summary
+
+| Metric        | Score  |
+|----------------|--------|
+| Test Samples   | 2502   |
+| Accuracy       | 82.41% |
+| Precision      | 83.48% |
+| Recall         | 80.82% |
+| F1-score       | 82.13% |
+
+These metrics provide a baseline for monitoring the model's classification performance and can be compared with future model versions.
+
+### Evaluation Script
+
+Model evaluation can be executed using:
+
+```bash
+python scripts/evaluate.py
+```
+
+The script evaluates the model on the test dataset and saves the results to:
+
+```text
+artifacts/model_performance.json
+```
 
 ---
 
 ## Future MLOps Steps
 
-  20. Model performance monitoring
   21. Final documentation
   22. Final ZIP
   23. Screen recording
