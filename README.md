@@ -19,10 +19,7 @@ MLOps-Assignment-2/
 │
 ├── src/
 │   ├── data/
-│   ├── models/
-│   ├── training/
-│   ├── inference/
-│   └── monitoring/
+│   └── models/
 │
 ├── api/
 │   └── main.py
@@ -34,16 +31,19 @@ MLOps-Assignment-2/
 ├── scripts/
 │   ├── preprocess.py
 │   ├── train.py
-│   └── smoke_test.py
+│   └── evaluate.py
 │
 ├── artifacts/
-│
-├── mlruns/
+│   ├── baseline_cnn.pt
+│   ├── model_performance.json
+│   └── training_metrics.json
 │
 ├── .github/
 │   └── workflows/
 │
 ├── Dockerfile
+├── .dockerignore
+├── docker-compose.yml
 ├── requirements.txt
 ├── dvc.yaml
 ├── dvc.lock
@@ -547,9 +547,7 @@ Docker is used to package the FastAPI inference service into a container.
 
 Docker image building and container execution were not performed locally because Docker installation is restricted on the development office laptop.
 
-The containerized FastAPI application is deployed on **Render** as a web service.
-
-The deployed service exposes the FastAPI application and provides the inference API through the hosted URL.
+The Docker image is built and published through GitHub Actions and stored in GitHub Container Registry (GHCR). The containerized application is deployed using Docker Compose as part of the CI/CD pipeline.
 
 ### Docker Configuration
 
@@ -558,6 +556,7 @@ The main Docker-related files are:
 ```text
 Dockerfile
 .dockerignore
+docker-compose.yml
 ```
 
 ---
@@ -701,7 +700,7 @@ Docker Compose provides a simple way to run the containerized FastAPI inference 
 
 Continuous Deployment (CD) was implemented using GitHub Actions.
 
-The deployment process uses the Docker image published to GitHub Container Registry (GHCR) and deploys the containerized FastAPI application using Render.
+The deployment process uses the Docker image published to GitHub Container Registry (GHCR) and deploys the containerized FastAPI application using Docker Compose.
 
 ### CD Pipeline
 
@@ -711,7 +710,7 @@ The deployment workflow:
 2. Logs in to GitHub Container Registry (GHCR)
 3. Builds and publishes the Docker image
 4. Uses the published Docker image for deployment
-5. Deploys the containerized FastAPI application on Render
+5. Starts the containerized FastAPI application using Docker Compose
 6. Starts the application on port `8000`
 7. Performs API health and smoke testing
 8. Verifies that the deployed application is running successfully
@@ -731,11 +730,11 @@ The Docker image contains:
 - Python dependencies
 - Uvicorn server
 
-### Render Deployment
+### Docker Compose Deployment
 
-The Dockerized FastAPI application is deployed on Render.
+The containerized FastAPI application is deployed using Docker Compose.
 
-Render provides the public hosting environment for the containerized application, allowing the FastAPI inference API to be accessed through a public URL.
+The `docker-compose.yml` configuration uses the published GHCR image and exposes the FastAPI service on port `8000`.
 
 ---
 
