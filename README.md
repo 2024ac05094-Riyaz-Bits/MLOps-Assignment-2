@@ -899,9 +899,3 @@ artifacts/model_performance.json
 ```
 
 ---
-
-## Future MLOps Steps
-
-  21. Final documentation
-  22. Final ZIP
-  23. Screen recording

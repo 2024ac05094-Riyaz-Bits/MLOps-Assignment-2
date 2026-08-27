@@ -14,7 +14,7 @@
 
 This project implements an end-to-end MLOps pipeline for Cats vs Dogs binary image classification.
 
-The pipeline covers data preprocessing and versioning, CNN model training, MLflow experiment tracking, FastAPI inference, testing, Docker containerization, GitHub Actions CI/CD, GHCR image publishing, Docker Compose deployment, smoke testing, and basic monitoring.
+The pipeline covers data preprocessing and versioning, CNN model training, MLflow experiment tracking, FastAPI inference, testing, Docker containerization, GitHub Actions CI/CD, GHCR image publishing, Docker Compose, smoke testing, and basic monitoring.
 
 ### Tools Used
 
@@ -98,6 +98,24 @@ Training metrics are stored in:
 artifacts/training_metrics.json
 ```
 
+### Training Plots
+
+Training and validation accuracy, as well as training and validation loss, are plotted using the metrics stored in `training_metrics.json`.
+
+The plots are generated using:
+
+```bash
+python scripts/plot_results.py
+```
+
+The generated plots are saved in:
+
+```text
+artifacts/plots/
+├── training_validation_accuracy.png
+└── training_validation_loss.png
+```
+
 ## MLflow Tracking
 
 MLflow tracks the CNN training experiment under:
@@ -106,7 +124,7 @@ MLflow tracks the CNN training experiment under:
 cats-vs-dogs-baseline
 ```
 
-A local SQLite database is used as the MLflow tracking backend. Training parameters, training/validation metrics, and model artifacts are recorded for the experiment.
+A local SQLite database is used as the MLflow tracking backend. Training parameters and training/validation metrics are recorded for the experiment.
 
 MLflow can be started locally using:
 
@@ -171,7 +189,7 @@ The FastAPI service is containerized using a Python 3.11 slim base image.
 
 The Docker image includes the application, required dependencies, and trained model artifact, and exposes port `8000`.
 
-The image is published as:
+The image is published to GitHub Container Registry as:
 
 ```text
 ghcr.io/2024ac05094-riyaz-bits/mlops-assignment-2:latest
@@ -181,23 +199,19 @@ Docker installation is restricted on the development office laptop, so the Docke
 
 ---
 
-# CI/CD and Deployment
+# CI/CD
 
 ## Automated Testing
 
 Pytest tests cover preprocessing and model inference, including image format/size, model loading, and model output.
 
-Latest local result:
-
-```text
-4 passed in 13.99s
-```
+The test suite was executed successfully.
 
 ## GitHub Actions
 
-GitHub Actions is used to automate testing, Docker image creation, image publishing, and deployment workflow execution.
+GitHub Actions is used to automate testing, Docker image creation, and image publishing.
 
-The published image is stored in GitHub Container Registry (GHCR).
+The Docker image is published to GitHub Container Registry (GHCR).
 
 ## Docker Compose and CD
 
@@ -276,6 +290,12 @@ The results are stored in:
 artifacts/model_performance.json
 ```
 
+A model performance plot is also generated from the same JSON file:
+
+```text
+artifacts/plots/model_performance.png
+```
+
 ---
 
 # Project Structure
@@ -301,12 +321,17 @@ MLOps-Assignment-2/
 ├── scripts/
 │   ├── preprocess.py
 │   ├── train.py
-│   └── evaluate.py
+│   ├── evaluate.py
+│   └── plot_results.py
 │
 ├── artifacts/
 │   ├── baseline_cnn.pt
 │   ├── model_performance.json
-│   └── training_metrics.json
+│   ├── training_metrics.json
+│   └── plots/
+│       ├── training_validation_accuracy.png
+│       ├── training_validation_loss.png
+│       └── model_performance.png
 │
 ├── .github/
 │   └── workflows/
@@ -325,9 +350,11 @@ MLOps-Assignment-2/
 
 # Conclusion
 
-The project demonstrates an end-to-end MLOps workflow from dataset preparation and versioning through model training, experiment tracking, API serving, testing, containerization, CI/CD, deployment, and monitoring.
+The project demonstrates an end-to-end MLOps workflow from dataset preparation and versioning through model training, experiment tracking, API serving, testing, containerization, CI/CD, and monitoring.
 
 The final 10-epoch CNN achieved **82.41% accuracy**, **83.48% precision**, **80.82% recall**, and **82.13% F1-score** on the test dataset.
+
+The training and model performance results are also visualized using plots generated directly from the stored JSON metrics.
 
 ## Repository
 
